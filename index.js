@@ -2,10 +2,13 @@ const express = require("express");
 const bodyParser = require("body-parser");
 require("dotenv").config();
 
+const apiKey = process.env.OPENAI_API_KEY;
+
 const { routeRequest } = require("./core/intentRouter"); // 💡 Deine Middleware einbinden
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json()); // Damit Express JSON korrekt verarbeitet
+app.use(bodyParser.json()); // Zusätzliche Absicherung für das Parsen
 
 // Webhook-Route für alle Anfragen
 app.post("/webhook", async (req, res) => {
@@ -24,5 +27,5 @@ app.post("/webhook", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Middleware läuft auf http://localhost:${PORT}`);
+    console.log(`🚀 Middleware läuft auf http://localhost:${PORT}`);
 });

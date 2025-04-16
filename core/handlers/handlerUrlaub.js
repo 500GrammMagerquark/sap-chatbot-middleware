@@ -5,9 +5,9 @@ async function getKontingent(userId) {
   
     // Später: SAP-OData-Aufruf
     return {
-      text: `Hallo! Du hast noch 12 Urlaubstage übrig.`
-    };
-  }
+        text: `Hallo ${userId}, du hast noch 12 Urlaubstage übrig.`
+      };
+    }
   
   module.exports = { getKontingent };
   

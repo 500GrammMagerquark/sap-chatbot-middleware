@@ -4,9 +4,10 @@ const handlerUrlaub = require("./handlers/handlerUrlaub");
 
 async function routeRequest(req) {
   const message = req.text?.toLowerCase() || "";
-  const userId = req.sapUser || req.from?.aadObjectId || "unknown";
+  
+  const userId = req.sapUser || req.from?.aadObjectId || "Unbekannt";
 
-  if (message.includes("urlaub") && message.includes("wieviel")) {
+  if (message.includes("urlaub") && (message.includes("wie") || message.includes("wieviel"))) {
     return await handlerUrlaub.getKontingent(userId);
   }
 
@@ -16,3 +17,4 @@ async function routeRequest(req) {
 }
 
 module.exports = { routeRequest };
+

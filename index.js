@@ -2,22 +2,32 @@ const express = require("express");
 const bodyParser = require("body-parser");
 require("dotenv").config();
 
-const apiKey = process.env.OPENAI_API_KEY;
-
-const { routeRequest } = require("./core/intentRouter"); // 💡 Deine Middleware einbinden
+const { routeRequest } = require("./core/intentRouter");
+const { clarifyIntent } = require("./LLM/intentClarifier");
 
 const app = express();
-app.use(express.json()); // Damit Express JSON korrekt verarbeitet
-app.use(bodyParser.json()); // Zusätzliche Absicherung für das Parsen
+app.use(express.json());
+app.use(bodyParser.json());
 
-// Webhook-Route für alle Anfragen
 app.post("/webhook", async (req, res) => {
   try {
     const text = req.body.text || "";
     const sapUser = req.body.sapUser || null;
     const from = req.body.from || {};
 
-    const response = await routeRequest({ text, sapUser, from }); // 💡 Intent-Logik aufrufen
+    const intentInfo = await clarifyIntent(text, sapUser, from);
+
+    if (intentInfo.pendingConfirmation) {
+      return res.status(200).send({ text: intentInfo.message });
+    }
+
+    const response = await routeRequest({
+      text,
+      sapUser,
+      from,
+      intent: intentInfo.intent
+    });
+
     res.status(200).send(response);
   } catch (err) {
     console.error("❌ Fehler:", err);
@@ -27,5 +37,5 @@ app.post("/webhook", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Middleware läuft auf http://localhost:${PORT}`);
+  console.log(`🚀 Middleware läuft auf http://localhost:${PORT}`);
 });

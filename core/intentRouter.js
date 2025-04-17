@@ -1,48 +1,26 @@
-const handlerUrlaub = require("./handlers/handlerUrlaub");
-const { clarifyIntent } = require("./LLM/intentClarifier");  // Importiere clarifyIntent
+const handlerUrlaub = require("../handlers/handlerUrlaub");
 
-let contextStore = {}; // Temporäre Speicherung des Kontexts
+async function routeRequest({ text, sapUser, from, intent }) {
+  const userId = sapUser || from?.aadObjectId || "Unbekannt";
 
-async function routeRequest(req) {
-  const message = req.text?.toLowerCase() || "";
-  const userId = req.sapUser || req.from?.aadObjectId || "Unbekannt";
-  let gptAntwort = await clarifyIntent(req.text);
+  switch (intent) {
+    case "urlaubskontingent_abfragen":
+      return await handlerUrlaub.getKontingent(userId);
 
-  console.log("💬 GPT Vorschlag:", gptAntwort);
+    case "urlaub_beantragen":
+      return await handlerUrlaub.beantragen(userId, text);
 
-  // Wenn GPT den Intent 'Urlaubskontingent abfragen' erkennt
-  if (gptAntwort.includes("urlaubskontingent") && gptAntwort.includes("abfragen")) {
-    contextStore[userId] = {
-      intent: "urlaubskontingent_abfragen",
-      originalMessage: req.text
-    };
+    // Hier kannst du weitere Intents ergänzen, z. B.:
+    // case "urlaub_stornieren":
+    // case "krankmeldung_melden":
+    // case "feiertage_anzeigen":
 
-    // Rückfrage stellen, ob der Intent korrekt ist
-    return {
-      text: `GPT Vorschlag: Der Intent dieser Anfrage ist "Urlaubskontingent abfragen". Bitte antworte mit 'Ja' oder 'Nein', ob das korrekt ist.`
-    };
+    default:
+      console.log("❌ Unbekannter Intent:", intent);
+      return {
+        text: "Ich habe dich leider nicht verstanden 🤔"
+      };
   }
-
-  // Wenn der Benutzer mit 'Ja' antwortet, den gespeicherten Kontext verwenden
-  if (message.includes("ja") && contextStore[userId]?.intent === "urlaubskontingent_abfragen") {
-    console.log("Benutzer hat 'Ja' geantwortet.");
-    // Urlaubskontingent abfragen
-    return await handlerUrlaub.getKontingent(userId);
-  }
-
-  // Wenn der Benutzer mit 'Nein' antwortet, fragt der Bot nach der richtigen Anfrage
-  if (message.includes("nein")) {
-    console.log("Benutzer hat 'Nein' geantwortet.");
-    return {
-      text: "Es tut mir leid. Bitte teile mir mit, was du genau wissen möchtest."
-    };
-  }
-
-  // Standardantwort, falls der Bot die Eingabe nicht versteht
-  console.log("Chat checkt nicht");
-  return {
-    text: "Ich habe dich leider nicht verstanden 🤔"
-  };
 }
 
 module.exports = { routeRequest };

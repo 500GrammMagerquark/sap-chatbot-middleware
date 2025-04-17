@@ -3,7 +3,7 @@ const bodyParser = require("body-parser");
 require("dotenv").config();
 
 const { routeRequest } = require("./core/intentRouter");
-const { clarifyIntent } = require("./LLM/intentClarifier");
+const { clarifyIntent } = require("./core/LLM/intentClarifier");
 
 const app = express();
 app.use(express.json());

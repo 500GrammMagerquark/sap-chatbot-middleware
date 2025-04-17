@@ -1,4 +1,4 @@
-const handlerUrlaub = require("../handlers/handlerUrlaub");
+const handlerUrlaub = require("./handlers/handlerUrlaub");
 
 async function routeRequest({ text, sapUser, from, intent }) {
   const userId = sapUser || from?.aadObjectId || "Unbekannt";
